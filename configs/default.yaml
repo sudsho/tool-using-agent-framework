@@ -1,0 +1,39 @@
+# Default agent framework config
+
+llm:
+  provider: openai          # openai | anthropic | litellm
+  model: gpt-4o-mini
+  temperature: 0.2
+  max_tokens: 1024
+  timeout_s: 30
+
+tracer:
+  enabled: true
+  backend: jsonl            # jsonl | mlflow | memory
+  out_dir: ./traces
+  flush_every: 1
+  include_payloads: true
+
+tools:
+  enabled:
+    - web_search
+    - calculator
+    - code_executor
+    - file_io
+  web_search:
+    provider: tavily        # tavily | serpapi
+    max_results: 5
+  code_executor:
+    timeout_s: 6
+    mem_limit_mb: 256
+  file_io:
+    sandbox_root: ./sandbox
+
+graph:
+  recursion_limit: 25
+  emit_intermediate: true
+
+dashboard:
+  host: 0.0.0.0
+  port: 8080
+  trace_dir: ./traces
