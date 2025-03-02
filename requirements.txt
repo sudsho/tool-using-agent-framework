@@ -1,0 +1,14 @@
+openai==1.60.0
+anthropic==0.42.0
+instructor==1.7.0
+langgraph==0.2.50
+fastapi==0.115.6
+uvicorn==0.34.0
+pydantic==2.10.4
+litellm==1.55.0
+httpx==0.28.1
+pytest==8.3.4
+pyyaml>=6.0
+jinja2>=3.1
+python-dotenv>=1.0.1
+tenacity>=9.0
