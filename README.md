@@ -1,5 +1,33 @@
 # tool-using-agent-framework
 
-minimal LangGraph-style framework for tool-using LLM agents with full step-tracing.
+Minimal LangGraph-style framework for building tool-using LLM agents with full
+step-by-step tracing baked in. Aims to stay small enough to read in one sitting
+while supporting the patterns I actually use in production: ReAct loops,
+plan-and-execute, supervisor-with-workers.
 
-(work in progress)
+## Why
+
+LangGraph and LangChain are great but heavy. For a lot of agent work I just want:
+
+- a typed state object that flows through a graph
+- nodes that are either an LLM call, a tool call, or a router
+- conditional edges
+- structured outputs (pydantic via `instructor`)
+- a trace of every single step (LLM input/output, tool args/result, latency)
+  written somewhere I can reload later
+
+This is that.
+
+## Quickstart
+
+```bash
+pip install -e ".[dev,dashboard]"
+cp .env.example .env  # then fill OPENAI_API_KEY etc.
+python examples/research_assistant.py
+```
+
+Then open `http://localhost:8080` to view traces in the dashboard.
+
+## Status
+
+Early. Building it out as I go.
