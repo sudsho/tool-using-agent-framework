@@ -18,6 +18,28 @@ LangGraph and LangChain are great but heavy. For a lot of agent work I just want
 
 This is that.
 
+## Architecture
+
+```
+                  +---------+
+   user --->      | START   |
+                  +----+----+
+                       |
+                       v
+                  +---------+         +-----------+
+                  |  llm    |<--------|  tool     |
+                  |  node   |-------->|  node     |
+                  +----+----+         +-----------+
+                       |  conditional edge (router)
+                       v
+                  +---------+
+                  |  END    |
+                  +---------+
+```
+
+Every transition emits a span to the tracer. Spans are persisted as JSONL by
+default; a small FastAPI dashboard reloads them.
+
 ## Quickstart
 
 ```bash
@@ -27,6 +49,19 @@ python examples/research_assistant.py
 ```
 
 Then open `http://localhost:8080` to view traces in the dashboard.
+
+## Built-in tools
+
+- `web_search` (Tavily or SerpAPI)
+- `calculator`
+- `code_executor` (subprocess sandbox)
+- `file_io` (sandboxed read/write)
+
+## Templates
+
+- `react` - classic ReAct loop
+- `plan_act` - plan-and-execute
+- `supervisor_workers` - supervisor delegating to N worker agents
 
 ## Status
 
