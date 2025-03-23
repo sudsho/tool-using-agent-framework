@@ -43,10 +43,19 @@ class AgentState(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     def merge(self, patch: dict[str, Any]) -> "AgentState":
+        """Return a new state with ``patch`` merged in.
+
+        - list-typed fields are appended (so messages accumulate)
+        - dict-typed fields are shallow-merged (metadata)
+        - everything else is replaced
+        """
         data = self.model_dump()
         for k, v in patch.items():
-            if k in data and isinstance(data[k], list) and isinstance(v, list):
-                data[k] = data[k] + v
+            cur = data.get(k)
+            if isinstance(cur, list) and isinstance(v, list):
+                data[k] = cur + v
+            elif isinstance(cur, dict) and isinstance(v, dict):
+                data[k] = {**cur, **v}
             else:
                 data[k] = v
         return type(self)(**data)
