@@ -14,10 +14,15 @@ from .base import Tool
 
 
 def _safe_join(root: Path, rel: str) -> Path:
+    """Resolve ``rel`` against ``root`` and refuse if it escapes the sandbox."""
+    if Path(rel).is_absolute():
+        raise ValueError(f"path {rel!r} must be relative to sandbox")
     candidate = (root / rel).resolve()
     root_resolved = root.resolve()
-    if root_resolved not in candidate.parents and candidate != root_resolved:
-        raise ValueError(f"path {rel!r} escapes sandbox")
+    try:
+        candidate.relative_to(root_resolved)
+    except ValueError as e:
+        raise ValueError(f"path {rel!r} escapes sandbox") from e
     return candidate
 
 
