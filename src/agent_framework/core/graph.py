@@ -70,10 +70,13 @@ class CompiledGraph:
         self.recursion_limit = recursion_limit
 
     def _next(self, current: str, state: AgentState) -> str:
-        # conditional first
+        # conditional edges win over plain edges
         for ce in self._g._cond:
             if ce.src == current:
-                return ce.resolve(state)
+                nxt = ce.resolve(state)
+                if self.tracer is not None:
+                    self.tracer.event("route", src=current, dst=nxt)
+                return nxt
         for e in self._g._edges:
             if e.src == current:
                 return e.dst
