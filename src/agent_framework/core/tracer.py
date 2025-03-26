@@ -116,10 +116,16 @@ class Tracer:
         if not self._buffer:
             return
         if self.backend == "jsonl":
-            path = self.out_dir / f"{self.current_trace}.jsonl"
-            with path.open("a", encoding="utf-8") as f:
-                for sp in self._buffer:
-                    f.write(json.dumps(asdict(sp), default=str) + "\n")
+            # group spans by their own trace_id so a new_trace() between flushes
+            # does not bleed into the wrong file
+            by_trace: dict[str, list[Span]] = {}
+            for sp in self._buffer:
+                by_trace.setdefault(sp.trace_id, []).append(sp)
+            for tid, spans in by_trace.items():
+                path = self.out_dir / f"{tid}.jsonl"
+                with path.open("a", encoding="utf-8") as f:
+                    for sp in spans:
+                        f.write(json.dumps(asdict(sp), default=str) + "\n")
         elif self.backend == "memory":
             pass
         else:  # pragma: no cover
