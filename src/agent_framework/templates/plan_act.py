@@ -84,13 +84,15 @@ class ExecutorNode(Node):
         sub_state = state.merge(
             {"messages": [Message(role="user", content=prompt)], "pending_calls": []}
         )
+        before = len(sub_state.messages)
         sub = self.llm_node.run(sub_state)
         sub_state = sub_state.merge(sub)
         if sub_state.pending_calls:
             tool_patch = self.tool_node.run(sub_state)
             sub_state = sub_state.merge(tool_patch)
+        new_msgs = sub_state.messages[before:]
         return {
-            "messages": sub_state.messages[-(2 + len(state.pending_calls)):],
+            "messages": new_msgs,
             "metadata": {**state.metadata, "step_idx": idx + 1},
         }
 
