@@ -11,7 +11,7 @@ the final answer from the step outputs.
 """
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -32,7 +32,7 @@ class PlanStep(BaseModel):
 
 class Plan(BaseModel):
     goal: str
-    steps: List[PlanStep] = Field(default_factory=list)
+    steps: list[PlanStep] = Field(default_factory=list)
 
 
 PLANNER_SYSTEM = """You are a planner. Break the user goal into 3-7 concrete
