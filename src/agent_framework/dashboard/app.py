@@ -14,16 +14,20 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
 
-TRACE_DIR = Path(os.getenv("TRACE_DIR", "./traces"))
-
 app = FastAPI(title="agent-framework dashboard", version="0.1.0")
 
 
+def _trace_dir() -> Path:
+    """Resolve the trace directory each call so env changes are picked up."""
+    return Path(os.getenv("TRACE_DIR", "./traces"))
+
+
 def _list_traces() -> list[dict[str, Any]]:
-    if not TRACE_DIR.exists():
+    td = _trace_dir()
+    if not td.exists():
         return []
     out: list[dict[str, Any]] = []
-    for p in sorted(TRACE_DIR.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True):
+    for p in sorted(td.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True):
         out.append(
             {
                 "trace_id": p.stem,
@@ -36,7 +40,7 @@ def _list_traces() -> list[dict[str, Any]]:
 
 
 def _load_spans(trace_id: str) -> list[dict[str, Any]]:
-    f = TRACE_DIR / f"{trace_id}.jsonl"
+    f = _trace_dir() / f"{trace_id}.jsonl"
     if not f.exists():
         raise HTTPException(404, f"unknown trace {trace_id}")
     spans: list[dict[str, Any]] = []

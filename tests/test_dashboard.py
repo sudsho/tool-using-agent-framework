@@ -1,7 +1,5 @@
 """Smoke tests for the FastAPI dashboard."""
 
-import importlib
-
 import pytest
 
 fastapi = pytest.importorskip("fastapi")
@@ -18,7 +16,6 @@ def test_index_lists_traces(trace_dir, monkeypatch):
     )
     # reload module so it picks up TRACE_DIR
     from agent_framework.dashboard import app as dash
-    importlib.reload(dash)
     client = TestClient(dash.app)
 
     r = client.get("/")
@@ -35,7 +32,6 @@ def test_index_lists_traces(trace_dir, monkeypatch):
 
 def test_unknown_trace_404s(trace_dir):
     from agent_framework.dashboard import app as dash
-    importlib.reload(dash)
     client = TestClient(dash.app)
     r = client.get("/api/traces/missing")
     assert r.status_code == 404
