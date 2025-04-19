@@ -9,7 +9,7 @@ llm:
 
 tracer:
   enabled: true
-  backend: jsonl            # jsonl | mlflow | memory
+  backend: jsonl            # jsonl | memory
   out_dir: ./traces
   flush_every: 1
   include_payloads: true

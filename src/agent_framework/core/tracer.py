@@ -1,11 +1,8 @@
 """OTel-style tracer.
 
-Every node execution, LLM call, and tool call writes a span. Spans are
-serialized to JSONL by default. A second backend writes to MLflow if it is
-installed and ``backend == "mlflow"``.
-
-A trace is a tree of spans sharing a ``trace_id``. Spans have a parent_id and
-form the call hierarchy.
+Each node execution writes a span. Spans are serialized to JSONL by default;
+an in-memory backend is available for tests. Spans share a ``trace_id`` and
+each carries a ``parent_id`` for downstream consumers that want the tree.
 """
 from __future__ import annotations
 
@@ -128,7 +125,7 @@ class Tracer:
                         f.write(json.dumps(asdict(sp), default=str) + "\n")
         elif self.backend == "memory":
             pass
-        else:  # pragma: no cover
+        else:
             raise ValueError(f"unknown tracer backend {self.backend!r}")
         self._buffer.clear()
 

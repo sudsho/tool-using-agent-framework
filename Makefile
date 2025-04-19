@@ -1,9 +1,11 @@
 .PHONY: install dev test lint format clean dashboard run-react run-plan
 
 install:
+	pip install -r requirements.txt
 	pip install -e .
 
 dev:
+	pip install -r requirements.txt
 	pip install -e ".[dev,dashboard]"
 
 test:

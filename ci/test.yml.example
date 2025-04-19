@@ -1,5 +1,3 @@
-# Example GitHub Actions workflow. Move to .github/workflows/test.yml when
-# pushing if your token has the workflow scope.
 name: tests
 
 on:

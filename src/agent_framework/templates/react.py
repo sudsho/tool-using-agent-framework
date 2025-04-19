@@ -1,8 +1,9 @@
-"""ReAct template: LLM <-> Tool loop, terminating when no tool call is emitted.
+"""ReAct-style template scaffold: an LLM node and a tool node connected by a
+conditional edge.
 
 ```
-START -> llm -> [tool_use?] -- yes --> tools -> llm
-                            \-- no  --> END
+START -> llm -> [tool_use?] - yes -> tools -> llm
+                            - no  -> END
 ```
 """
 from __future__ import annotations

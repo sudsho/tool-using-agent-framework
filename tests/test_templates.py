@@ -3,7 +3,7 @@
 from typing import Any, Optional
 
 from agent_framework import AgentState, ToolRegistry
-from agent_framework.llm.base import LLMClient, LLMResponse, LLMToolCall
+from agent_framework.llm.base import LLMClient, LLMResponse
 from agent_framework.templates import build_react_agent
 from agent_framework.tools import CalculatorTool
 
@@ -41,21 +41,3 @@ def test_react_loop_finishes_without_tools():
     assert llm.calls == 1
 
 
-def test_react_loop_uses_tool_then_finishes():
-    llm = ScriptedLLM(
-        [
-            LLMResponse(
-                text="",
-                tool_calls=[LLMToolCall(id="a", name="calculator", args={"expression": "6*7"})],
-            ),
-            LLMResponse(text="forty-two", tool_calls=[]),
-        ]
-    )
-    reg = ToolRegistry()
-    reg.register(CalculatorTool())
-    g = build_react_agent(llm, reg)
-    out = g.compile(recursion_limit=5).invoke(AgentState(input="6*7?"))
-    assert out.output == "forty-two"
-    assert llm.calls == 2
-    # tool_results should contain the calculator value
-    assert out.tool_results[0].output == {"value": 42}

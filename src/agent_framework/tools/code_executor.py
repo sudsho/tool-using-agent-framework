@@ -1,10 +1,9 @@
-"""Run untrusted Python in a subprocess sandbox.
+"""Run untrusted Python in a subprocess.
 
-Not a real sandbox in the seL4 sense - it's a child Python process with no
-network arg restrictions, a CPU time limit (best effort on Windows) and a
-short wall-clock timeout. Good enough for an agent doing arithmetic-heavy
-calculations or one-off data wrangling. Don't expose to the open internet
-without containerizing.
+Not a real sandbox in the seL4 sense - it's a child Python process launched
+with ``-I`` isolation and a wall-clock timeout. Good enough for an agent doing
+arithmetic-heavy calculations or one-off data wrangling. Don't expose to the
+open internet without containerizing.
 """
 from __future__ import annotations
 

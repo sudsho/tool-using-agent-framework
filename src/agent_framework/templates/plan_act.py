@@ -1,13 +1,14 @@
 """Plan-and-execute template.
 
 ```
-START -> planner -> executor -> [more_steps?] -- yes --> executor
-                                              \-- no  --> summarizer -> END
+START -> planner -> executor -> [more_steps?] - yes -> executor
+                                              - no  -> summarizer -> END
 ```
 
-The planner produces a structured ``Plan`` (list of steps) via instructor.
-The executor turns each step into a ReAct sub-loop. The summarizer composes
-the final answer from the step outputs.
+The planner asks the LLM for a structured ``Plan`` object; that path relies
+on ``instructor`` and is wired for the OpenAI client only. The executor turns
+each step into a single LLM+tool round, and the summarizer composes the final
+answer from the step outputs.
 """
 from __future__ import annotations
 
