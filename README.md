@@ -17,6 +17,62 @@ LangGraph and LangChain are great but heavy. For a lot of agent work I just want
 
 This is that. ~1.5k lines of Python, no magic, fits in a notebook.
 
+## Quick start (runs offline)
+
+No API keys, no network, no GPU. The smoke script drives a ReAct agent with a
+rule-based `MockLLM` and the offline tools (real `calculator` + a canned
+`web_search`), so the graph engine, tool registry, tracer, and the full ReAct
+loop all run as-is.
+
+```bash
+pip install -e . --no-deps    # only pydantic is required for the core
+python scripts/smoke.py       # or: make smoke
+```
+
+Real output:
+
+```
+=== Math task (calculator tool) ===
+question: What is (12 * 8) + sqrt(256)?
+reasoning / tool trace:
+    [assistant] This is an arithmetic question. I'll use the calculator on `(12 * 8) + sqrt(256)`.
+    [tool     ] {'value': 112.0}
+    [assistant] The result of `What is (12 * 8) + sqrt(256)?` is 112.
+final answer: The result of `What is (12 * 8) + sqrt(256)?` is 112.
+  trace 46e4275416b64f5ea98b5bd1315519ea  (5 spans, file: 46e4275416b64f5ea98b5bd1315519ea.jsonl)
+    - node   llm      patch=[messages,pending_calls]  1.0ms
+    - event  route    src=llm dst=tools
+    - node   tools    patch=[messages,tool_results,pending_calls]  0.0ms
+    - node   llm      patch=[messages,pending_calls,output]  0.0ms
+    - event  route    src=llm dst=__end__
+
+=== Research task (web_search tool) ===
+question: What is the population of Iceland?
+reasoning / tool trace:
+    [assistant] I need to look this up. I'll search the web for: What is the population of Iceland?
+    [tool     ] {'results': [{'title': 'Iceland - Population', 'url': 'https://example.org/iceland', 's...
+    [assistant] Iceland had an estimated population of about 393,600 people in 2024, making it the most...
+final answer: Iceland had an estimated population of about 393,600 people in 2024, making it the most sparsely populated country in Europe. (source: Iceland - Population, https://example.org/iceland)
+  trace 503ee0f529c449c38dc551525a68f20a  (5 spans, file: 503ee0f529c449c38dc551525a68f20a.jsonl)
+    - node   llm      patch=[messages,pending_calls]  0.0ms
+    - event  route    src=llm dst=tools
+    - node   tools    patch=[messages,tool_results,pending_calls]  0.0ms
+    - node   llm      patch=[messages,pending_calls,output]  0.0ms
+    - event  route    src=llm dst=__end__
+
+SMOKE OK: both tasks ran offline, called tools, and returned answers.
+```
+
+Tests (also offline):
+
+```bash
+python -m pytest -q
+# 39 passed
+```
+
+To run against a real provider instead, wire in `OpenAIClient` / `AnthropicClient`
+and set the matching key (see below).
+
 ## Architecture
 
 ```
@@ -66,10 +122,18 @@ compiled = graph.compile(tracer=Tracer(out_dir="./traces"))
 
 | name           | description                                          |
 | -------------- | ---------------------------------------------------- |
-| `web_search`   | Tavily or SerpAPI                                    |
+| `web_search`   | Tavily, SerpAPI, or an offline `mock` corpus         |
 | `calculator`   | Safe AST-based arithmetic                            |
 | `code_executor`| Python in a subprocess with a wall-clock timeout     |
 | `file_io`      | Sandboxed read/write under a configured root         |
+
+## LLM clients
+
+`OpenAIClient`, `AnthropicClient`, and `LiteLLMClient` wrap the real providers
+(pick one via `make_client(provider, model)` and set the matching key).
+`MockLLM` is a rule-based, dependency-free client that decides tool calls from
+the query and composes a final answer from tool output. It needs no key and no
+network, so it powers the offline smoke and tests above.
 
 ## Templates
 

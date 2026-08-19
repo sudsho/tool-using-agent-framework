@@ -34,7 +34,11 @@ class LLMNode(Node):
         msgs: list[dict[str, Any]] = []
         if self.system_prompt:
             msgs.append({"role": "system", "content": self.system_prompt})
-        if state.input and not state.messages:
+        # Always surface the original question as the leading user turn. The
+        # running ``messages`` list only accumulates assistant/tool turns, so
+        # without this the question would vanish from the history after the
+        # first LLM step and later turns (LLM or tool follow-ups) would lose it.
+        if state.input:
             msgs.append({"role": "user", "content": state.input})
         for m in state.messages:
             entry: dict[str, Any] = {"role": m.role, "content": m.content}

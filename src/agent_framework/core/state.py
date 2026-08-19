@@ -5,7 +5,7 @@ returns a partial dict that is merged into the running state.
 """
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,6 +34,13 @@ class AgentState(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
+    # Fields treated as ephemeral control queues: a patch *replaces* them rather
+    # than appending. ``pending_calls`` is the tool-call queue that a ToolNode
+    # must be able to drain by returning ``{"pending_calls": []}``; without
+    # replace semantics the empty patch would append (a no-op) and the ReAct
+    # loop would never clear the queue.
+    _REPLACE_FIELDS: ClassVar[set[str]] = {"pending_calls"}
+
     input: str = ""
     messages: list[Message] = Field(default_factory=list)
     pending_calls: list[ToolCall] = Field(default_factory=list)
@@ -47,12 +54,15 @@ class AgentState(BaseModel):
 
         - list-typed fields are appended (so messages accumulate)
         - dict-typed fields are shallow-merged (metadata)
+        - fields in ``_REPLACE_FIELDS`` (e.g. ``pending_calls``) are replaced
         - everything else is replaced
         """
         data = self.model_dump()
         for k, v in patch.items():
             cur = data.get(k)
-            if isinstance(cur, list) and isinstance(v, list):
+            if k in self._REPLACE_FIELDS:
+                data[k] = v
+            elif isinstance(cur, list) and isinstance(v, list):
                 data[k] = cur + v
             elif isinstance(cur, dict) and isinstance(v, dict):
                 data[k] = {**cur, **v}

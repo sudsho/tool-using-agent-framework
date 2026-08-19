@@ -1,8 +1,13 @@
-.PHONY: install dev test lint format clean dashboard run-react run-plan
+.PHONY: install dev test lint format clean dashboard run-react run-plan smoke
 
 install:
 	pip install -r requirements.txt
 	pip install -e .
+
+# Offline end-to-end smoke: no API keys, no network, no GPU. Uses the
+# rule-based MockLLM + real calculator + canned web_search.
+smoke:
+	python scripts/smoke.py
 
 dev:
 	pip install -r requirements.txt
